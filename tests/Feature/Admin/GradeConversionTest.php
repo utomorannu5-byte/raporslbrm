@@ -1,0 +1,173 @@
+<?php
+
+namespace Tests\Feature\Admin;
+
+use App\Models\GradeConversion;
+use App\Models\User;
+use Database\Seeders\RoleSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class GradeConversionTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RoleSeeder::class);
+    }
+
+    public function test_valid_grade_conversion_is_stored(): void
+    {
+        $this->actingAs(
+            User::factory()->create(['email' => 'admin@test.test', 'password' => 'password'])
+                ->assignRole('admin')
+        )->post('/admin/grade-conversions', [
+            'min_score' => 80,
+            'max_score' => 100,
+            'text_label' => 'Sangat Baik',
+        ])->assertRedirect()->assertSessionHas('status');
+
+        $this->assertDatabaseHas('grade_conversions', [
+            'min_score' => 80,
+            'max_score' => 100,
+            'text_label' => 'Sangat Baik',
+        ]);
+    }
+
+    public function test_overlapping_grade_conversion_is_rejected(): void
+    {
+        // Create existing conversion
+        GradeConversion::factory()->create([
+            'min_score' => 80,
+            'max_score' => 100,
+            'text_label' => 'Sangat Baik',
+        ]);
+
+        $response = $this->actingAs(
+            User::factory()->create(['email' => 'admin@test.test', 'password' => 'password'])
+                ->assignRole('admin')
+        )->post('/admin/grade-conversions', [
+            'min_score' => 90,
+            'max_score' => 95,
+            'text_label' => 'Istimewa',
+        ]);
+
+        $response->assertSessionHasErrors('max_score');
+        $this->assertDatabaseMissing('grade_conversions', [
+            'text_label' => 'Istimewa',
+        ]);
+    }
+
+    public function test_adjacent_grade_conversion_is_allowed(): void
+    {
+        // Create existing conversion 80-100
+        GradeConversion::factory()->create([
+            'min_score' => 80,
+            'max_score' => 100,
+            'text_label' => 'Sangat Baik',
+        ]);
+
+        // Create adjacent conversion 75-79 (no overlap)
+        $response = $this->actingAs(
+            User::factory()->create(['email' => 'admin@test.test', 'password' => 'password'])
+                ->assignRole('admin')
+        )->post('/admin/grade-conversions', [
+            'min_score' => 75,
+            'max_score' => 79,
+            'text_label' => 'Baik',
+        ]);
+
+        $response->assertRedirect()->assertSessionHas('status');
+        $this->assertDatabaseHas('grade_conversions', [
+            'min_score' => 75,
+            'max_score' => 79,
+            'text_label' => 'Baik',
+        ]);
+    }
+
+    public function test_admin_can_edit_grade_conversion(): void
+    {
+        $conversion = GradeConversion::factory()->create([
+            'min_score' => 80,
+            'max_score' => 100,
+            'text_label' => 'Sangat Baik',
+        ]);
+
+        $this->actingAs(
+            User::factory()->create(['email' => 'admin@test.test', 'password' => 'password'])
+                ->assignRole('admin')
+        )->put("/admin/grade-conversions/{$conversion->id}", [
+            'min_score' => 85,
+            'max_score' => 100,
+            'text_label' => 'Sangat Baik Sekali',
+        ])->assertRedirect()->assertSessionHas('status');
+
+        $this->assertDatabaseHas('grade_conversions', [
+            'id' => $conversion->id,
+            'min_score' => 85,
+            'max_score' => 100,
+            'text_label' => 'Sangat Baik Sekali',
+        ]);
+    }
+
+    public function test_edit_overlapping_grade_conversion_is_rejected(): void
+    {
+        // Create two conversions
+        $conversion1 = GradeConversion::factory()->create([
+            'min_score' => 80,
+            'max_score' => 100,
+            'text_label' => 'Sangat Baik',
+        ]);
+
+        GradeConversion::factory()->create([
+            'min_score' => 60,
+            'max_score' => 79,
+            'text_label' => 'Cukup',
+        ]);
+
+        // Try to edit conversion1 to overlap with conversion2
+        $response = $this->actingAs(
+            User::factory()->create(['email' => 'admin@test.test', 'password' => 'password'])
+                ->assignRole('admin')
+        )->put("/admin/grade-conversions/{$conversion1->id}", [
+            'min_score' => 70,
+            'max_score' => 85,
+            'text_label' => 'Sangat Baik',
+        ]);
+
+        $response->assertSessionHasErrors('max_score');
+    }
+
+    public function test_admin_can_delete_grade_conversion(): void
+    {
+        $conversion = GradeConversion::factory()->create([
+            'min_score' => 80,
+            'max_score' => 100,
+            'text_label' => 'Sangat Baik',
+        ]);
+
+        $this->actingAs(
+            User::factory()->create(['email' => 'admin@test.test', 'password' => 'password'])
+                ->assignRole('admin')
+        )->delete("/admin/grade-conversions/{$conversion->id}")
+            ->assertRedirect()->assertSessionHas('status');
+
+        $this->assertDatabaseMissing('grade_conversions', ['id' => $conversion->id]);
+    }
+
+    public function test_min_score_greater_than_max_score_is_rejected(): void
+    {
+        $response = $this->actingAs(
+            User::factory()->create(['email' => 'admin@test.test', 'password' => 'password'])
+                ->assignRole('admin')
+        )->post('/admin/grade-conversions', [
+            'min_score' => 90,
+            'max_score' => 80,
+            'text_label' => 'Invalid',
+        ]);
+
+        $response->assertSessionHasErrors('max_score');
+    }
+}

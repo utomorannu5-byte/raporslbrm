@@ -70,7 +70,7 @@ class UserController extends Controller
         $validated = $request->validated();
 
         // Only update password if provided
-        if (isset($validated['password']) && !empty($validated['password'])) {
+        if (isset($validated['password']) && ! empty($validated['password'])) {
             $validated['password'] = bcrypt($validated['password']);
         } else {
             unset($validated['password']);

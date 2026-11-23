@@ -23,7 +23,7 @@ class GradeConversion extends Model
     public function scopeByScore($query, $score)
     {
         return $query->where('min_score', '<=', $score)
-                    ->where('max_score', '>=', $score)
-                    ->first();
+            ->where('max_score', '>=', $score)
+            ->first();
     }
 }

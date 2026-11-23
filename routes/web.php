@@ -1,6 +1,15 @@
 <?php
 
+use App\Http\Controllers\Admin\AcademicYearController;
+use App\Http\Controllers\Admin\ClassRoomController;
+use App\Http\Controllers\Admin\CompetencyDomainController;
+use App\Http\Controllers\Admin\CompetencyIndicatorController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\GradeConversionController;
+use App\Http\Controllers\Admin\SchoolProfileController;
+use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\SubjectController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\ProfileController;
@@ -18,19 +27,34 @@ Route::middleware(['auth', 'role:admin'])
     ->group(function () {
         Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
 
-        Route::get('/school-profile/edit', [App\Http\Controllers\Admin\SchoolProfileController::class, 'edit'])
+        Route::get('/school-profile/edit', [SchoolProfileController::class, 'edit'])
             ->name('school-profile.edit');
 
-        Route::put('/school-profile', [App\Http\Controllers\Admin\SchoolProfileController::class, 'update'])
+        Route::put('/school-profile', [SchoolProfileController::class, 'update'])
             ->name('school-profile.update');
 
-        Route::resource('users', App\Http\Controllers\Admin\UserController::class)
+        Route::resource('users', UserController::class)
             ->except(['show']);
 
-        Route::resource('academic-years', App\Http\Controllers\Admin\AcademicYearController::class)
+        Route::resource('academic-years', AcademicYearController::class)
             ->except(['show']);
 
-        Route::resource('subjects', App\Http\Controllers\Admin\SubjectController::class)
+        Route::resource('subjects', SubjectController::class)
+            ->except(['show']);
+
+        Route::resource('classes', ClassRoomController::class)
+            ->except(['show']);
+
+        Route::resource('students', StudentController::class)
+            ->except(['show']);
+
+        Route::resource('competency-domains', CompetencyDomainController::class)
+            ->except(['show']);
+
+        Route::resource('competency-indicators', CompetencyIndicatorController::class)
+            ->except(['show']);
+
+        Route::resource('grade-conversions', GradeConversionController::class)
             ->except(['show']);
     });
 

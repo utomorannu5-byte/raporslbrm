@@ -66,7 +66,7 @@ class UserCrudTest extends TestCase
         ]);
         $user->assignRole('guru');
 
-        $this->actingAs($user)->delete('/admin/users/' . $user->id)
+        $this->actingAs($user)->delete('/admin/users/'.$user->id)
             ->assertForbidden();
     }
 }

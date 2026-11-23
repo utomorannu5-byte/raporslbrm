@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\GradeConversion;
+use Illuminate\Database\Seeder;
 
 class GradeConversionSeeder extends Seeder
 {

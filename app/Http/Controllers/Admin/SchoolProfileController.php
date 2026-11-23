@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreSchoolProfileRequest;
 use App\Http\Requests\UpdateSchoolProfileRequest;
 use App\Models\SchoolProfile;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -27,16 +26,16 @@ class SchoolProfileController extends Controller
     /**
      * Update the school profile.
      */
-    public function update(UpdateSchoolProfileRequest $request): \Illuminate\Http\RedirectResponse
+    public function update(UpdateSchoolProfileRequest $request): RedirectResponse
     {
         $data = $request->validated();
 
         // Handle logo upload
         if ($request->hasFile('logo')) {
             $logo = $request->file('logo');
-            $logoName = 'school-' . Str::slug($request->name) . '-' . time() . '.' . $logo->getClientOriginalExtension();
+            $logoName = 'school-'.Str::slug($request->name).'-'.time().'.'.$logo->getClientOriginalExtension();
             $logo->storeAs('public/logos', $logoName);
-            $data['logo_path'] = 'logos/' . $logoName;
+            $data['logo_path'] = 'logos/'.$logoName;
         }
 
         $schoolProfile = SchoolProfile::firstOrCreate(

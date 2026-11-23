@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\CompetencyDomain;
 use App\Models\CompetencyIndicator;
+use Illuminate\Database\Seeder;
 
 class CompetencySeeder extends Seeder
 {

@@ -14,10 +14,12 @@
             [
                 'label' => 'Master Data',
                 'items' => [
+                    ['label' => 'Kelas', 'icon' => 'people', 'route' => 'admin.classes.index'],
+                    ['label' => 'Siswa', 'icon' => 'person', 'route' => 'admin.students.index'],
                     ['label' => 'Mapel Akademik', 'icon' => 'book', 'route' => 'admin.subjects.index'],
-                    ['label' => 'Domain Kompetensi', 'icon' => 'checklist', 'soon' => true],
-                    ['label' => 'Indikator Kompetensi', 'icon' => 'pencil', 'soon' => true],
-                    ['label' => 'Konversi Nilai', 'icon' => 'sliders', 'soon' => true],
+                    ['label' => 'Domain Kompetensi', 'icon' => 'checklist', 'route' => 'admin.competency-domains.index'],
+                    ['label' => 'Indikator Kompetensi', 'icon' => 'pencil', 'route' => 'admin.competency-indicators.index'],
+                    ['label' => 'Konversi Nilai', 'icon' => 'sliders', 'route' => 'admin.grade-conversions.index'],
                     ['label' => 'Pengaturan Sekolah', 'icon' => 'school', 'route' => 'admin.school-profile.edit'],
                     ['label' => 'Pengguna', 'icon' => 'users', 'route' => 'admin.users.index'],
                     ['label' => 'Tahun Ajaran', 'icon' => 'calendar', 'route' => 'admin.academic-years.index'],
