@@ -12,16 +12,15 @@
                 ],
             ],
             [
-                'label' => 'Administrasi',
+                'label' => 'Master Data',
                 'items' => [
-                    ['label' => 'Pengguna', 'icon' => 'users', 'soon' => true],
-                    ['label' => 'Siswa & Kelas', 'icon' => 'students', 'soon' => true],
-                    ['label' => 'Tahun Ajaran', 'icon' => 'calendar', 'soon' => true],
-                    ['label' => 'Mapel', 'icon' => 'book', 'soon' => true],
-                    ['label' => 'Kompetensi', 'icon' => 'checklist', 'soon' => true],
+                    ['label' => 'Mapel Akademik', 'icon' => 'book', 'route' => 'admin.subjects.index'],
+                    ['label' => 'Domain Kompetensi', 'icon' => 'checklist', 'soon' => true],
+                    ['label' => 'Indikator Kompetensi', 'icon' => 'pencil', 'soon' => true],
                     ['label' => 'Konversi Nilai', 'icon' => 'sliders', 'soon' => true],
-                    ['label' => 'Pengaturan Sekolah', 'icon' => 'school', 'soon' => true],
-                    ['label' => 'Arsip Rapor', 'icon' => 'archive', 'soon' => true],
+                    ['label' => 'Pengaturan Sekolah', 'icon' => 'school', 'route' => 'admin.school-profile.edit'],
+                    ['label' => 'Pengguna', 'icon' => 'users', 'route' => 'admin.users.index'],
+                    ['label' => 'Tahun Ajaran', 'icon' => 'calendar', 'route' => 'admin.academic-years.index'],
                 ],
             ],
         ]

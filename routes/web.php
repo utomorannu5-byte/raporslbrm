@@ -17,6 +17,21 @@ Route::middleware(['auth', 'role:admin'])
     ->name('admin.')
     ->group(function () {
         Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
+
+        Route::get('/school-profile/edit', [App\Http\Controllers\Admin\SchoolProfileController::class, 'edit'])
+            ->name('school-profile.edit');
+
+        Route::put('/school-profile', [App\Http\Controllers\Admin\SchoolProfileController::class, 'update'])
+            ->name('school-profile.update');
+
+        Route::resource('users', App\Http\Controllers\Admin\UserController::class)
+            ->except(['show']);
+
+        Route::resource('academic-years', App\Http\Controllers\Admin\AcademicYearController::class)
+            ->except(['show']);
+
+        Route::resource('subjects', App\Http\Controllers\Admin\SubjectController::class)
+            ->except(['show']);
     });
 
 Route::middleware(['auth', 'role:guru'])

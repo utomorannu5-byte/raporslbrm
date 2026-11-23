@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class AdminUserSeeder extends Seeder
 {
@@ -16,7 +17,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'admin@erapor-slb.test'],
             [
                 'name' => 'Administrator',
-                'password' => 'password',
+                'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ],
         );
@@ -26,7 +27,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'guru@erapor-slb.test'],
             [
                 'name' => 'Guru Demo',
-                'password' => 'password',
+                'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ],
         );
