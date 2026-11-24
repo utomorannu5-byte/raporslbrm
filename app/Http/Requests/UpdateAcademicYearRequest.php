@@ -14,7 +14,7 @@ class UpdateAcademicYearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'year' => ['sometimes', 'required', 'string', 'regex:\d{4}/\d{4}', 'unique:academic_years,year,'.$this->route('academicYear')->id],
+            'year' => ['sometimes', 'required', 'string', 'regex:#^\d{4}/\d{4}$#', 'unique:academic_years,year,'.$this->route('academicYear')->id],
             'semester' => ['sometimes', 'required', 'in:Ganjil,Genap'],
             'is_active' => ['sometimes', 'boolean'],
         ];

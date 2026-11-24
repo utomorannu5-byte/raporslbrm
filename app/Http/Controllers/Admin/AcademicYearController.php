@@ -42,7 +42,7 @@ class AcademicYearController extends Controller
         });
 
         return redirect()
-            ->route('admin.academic-years')
+            ->route('admin.academic-years.index')
             ->with('status', 'Tahun ajaran berhasil diset aktivkan.');
     }
 
@@ -69,7 +69,7 @@ class AcademicYearController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.academic-years')
+            ->route('admin.academic-years.index')
             ->with('status', 'Tahun ajaran berhasil diperbarui.');
     }
 
@@ -87,7 +87,7 @@ class AcademicYearController extends Controller
         });
 
         return redirect()
-            ->route('admin.academic-years')
+            ->route('admin.academic-years.index')
             ->with('status', 'Tahun ajaran berhasil di-set sebagai aktif.');
     }
 }

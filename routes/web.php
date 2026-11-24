@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
+use App\Http\Controllers\Guru\InputNilaiController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +64,18 @@ Route::middleware(['auth', 'role:guru'])
     ->name('guru.')
     ->group(function () {
         Route::get('/dashboard', GuruDashboardController::class)->name('dashboard');
+
+        Route::get('/input-nilai', [InputNilaiController::class, 'index'])
+            ->name('input-nilai.index');
+
+        Route::get('/input-nilai/{student}', [InputNilaiController::class, 'edit'])
+            ->name('input-nilai.edit');
+
+        Route::put('/input-nilai/{student}', [InputNilaiController::class, 'update'])
+            ->name('input-nilai.update');
+
+        Route::get('/grade-conversion/{score}', [InputNilaiController::class, 'convertGrade'])
+            ->name('grade-conversion');
     });
 
 Route::middleware('auth')->group(function () {

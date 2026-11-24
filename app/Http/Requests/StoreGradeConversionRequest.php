@@ -53,13 +53,28 @@ class StoreGradeConversionRequest extends FormRequest
             $max = $this->input('max_score');
 
             if (is_numeric($min) && is_numeric($max)) {
-                $overlap = GradeConversion::where(function ($query) use ($min, $max) {
-                    $query->where('min_score', '<=', $max)
-                        ->where('max_score', '>=', $min);
-                })->exists();
+                // Check for duplicate exact match
+                $duplicate = GradeConversion::where('min_score', $min)
+                    ->where('max_score', $max)
+                    ->exists();
 
-                if ($overlap) {
-                    $validator->errors()->add('max_score', 'Rentang nilai ini tumpang tindih dengan data yang sudah ada.');
+                if ($duplicate) {
+                    $validator->errors()->add('max_score', 'Konversi nilai dengan rentang ini sudah ada.');
+                    return;
+                }
+
+                // For single point (min=max), allow if not duplicate
+                // Only check overlap with EXISTING RANGES (where min < max)
+                if ($min < $max) {
+                    $overlap = GradeConversion::whereColumn('min_score', '<', 'max_score')
+                        ->where(function ($query) use ($min, $max) {
+                            $query->where('min_score', '<=', $max)
+                                ->where('max_score', '>=', $min);
+                        })->exists();
+
+                    if ($overlap) {
+                        $validator->errors()->add('max_score', 'Rentang nilai ini tumpang tindih dengan range yang sudah ada.');
+                    }
                 }
             }
         });

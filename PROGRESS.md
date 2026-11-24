@@ -193,3 +193,7 @@ Menu Master Data dengan route name `.index` yang benar
 
 *Last Updated: 23 November 2026*
 *Next Review: Sebelum memulai Tahap 3*
+### 🐛 Bug Fixes Log:
+| Tanggal | Bug | Root Cause | Fix |
+|---|---|---|---|
+| 24 Nov 2026 | Sidebar menutupi halaman & navbar di bawah (Subjects, Users, Academic Years) | 3 view files (`subjects/index`, `users/index`, `academic-years/index`) missing `@endsection` | Tambah `@endsection` di akhir file untuk menutup `@section('content')` |

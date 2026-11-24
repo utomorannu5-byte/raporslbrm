@@ -12,21 +12,49 @@ class GradeConversionSeeder extends Seeder
      */
     public function run(): void
     {
-        $mappings = [
-            ['min_score' => 0, 'max_score' => 9, 'text_label' => 'Nol'],
-            ['min_score' => 10, 'max_score' => 19, 'text_label' => 'Sepuluh'],
-            ['min_score' => 20, 'max_score' => 29, 'text_label' => 'Dua puluh'],
-            ['min_score' => 30, 'max_score' => 39, 'text_label' => 'Tiga puluh'],
-            ['min_score' => 40, 'max_score' => 49, 'text_label' => 'Empat puluh'],
-            ['min_score' => 50, 'max_score' => 59, 'text_label' => 'Lima puluh'],
-            ['min_score' => 60, 'max_score' => 69, 'text_label' => 'Enam puluh'],
-            ['min_score' => 70, 'max_score' => 79, 'text_label' => 'Tujuh puluh'],
-            ['min_score' => 80, 'max_score' => 89, 'text_label' => 'Delapan puluh'],
-            ['min_score' => 90, 'max_score' => 100, 'text_label' => 'Sembilan puluh sembilan'],
-        ];
+        GradeConversion::truncate();
 
-        foreach ($mappings as $mapping) {
-            GradeConversion::create($mapping);
+        for ($score = 0; $score <= 100; $score++) {
+            GradeConversion::create([
+                'min_score' => $score,
+                'max_score' => $score,
+                'text_label' => self::numberToIndonesian($score),
+            ]);
         }
+    }
+
+    /**
+     * Convert number to Indonesian words.
+     */
+    private static function numberToIndonesian(int $number): string
+    {
+        if ($number === 0) {
+            return 'Nol';
+        }
+
+        if ($number === 100) {
+            return 'Seratus';
+        }
+
+        $units = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan'];
+        $teens = ['sepuluh', 'sebelas', 'dua belas', 'tiga belas', 'empat belas', 'lima belas', 'enam belas', 'tujuh belas', 'delapan belas', 'sembilan belas'];
+        $tens = ['', '', 'dua puluh', 'tiga puluh', 'empat puluh', 'lima puluh', 'enam puluh', 'tujuh puluh', 'delapan puluh', 'sembilan puluh'];
+
+        if ($number < 10) {
+            return ucfirst($units[$number]);
+        }
+
+        if ($number < 20) {
+            return ucfirst($teens[$number - 10]);
+        }
+
+        $ten = (int)($number / 10);
+        $unit = $number % 10;
+
+        if ($unit === 0) {
+            return ucfirst($tens[$ten]);
+        }
+
+        return ucfirst($tens[$ten] . ' ' . $units[$unit]);
     }
 }

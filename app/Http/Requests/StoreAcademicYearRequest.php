@@ -14,7 +14,7 @@ class StoreAcademicYearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'year' => ['required', 'string', 'regex:\d{4}/\d{4}', 'unique:academic_years,year'],
+            'year' => ['required', 'string', 'regex:#^\d{4}/\d{4}$#', 'unique:academic_years,year'],
             'semester' => ['required', 'in:Ganjil,Genap'],
             'is_active' => ['sometimes', 'boolean'],
         ];
