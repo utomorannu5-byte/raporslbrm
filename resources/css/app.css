@@ -245,7 +245,7 @@ a {
 .app-topbar {
     position: sticky;
     top: 0;
-    z-index: 1020;
+    z-index: 1030;
     height: 70px;
     border-bottom: 1px solid var(--erapor-border);
     background: rgba(255, 255, 255, 0.94);
