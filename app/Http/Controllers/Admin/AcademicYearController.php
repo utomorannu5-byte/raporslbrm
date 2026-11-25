@@ -47,6 +47,14 @@ class AcademicYearController extends Controller
     }
 
     /**
+     * Show the form for creating a new academic year.
+     */
+    public function create(): View
+    {
+        return view('admin.academic-years.create');
+    }
+
+    /**
      * Display the edit form for an academic year.
      */
     public function edit(AcademicYear $academicYear): View
@@ -66,7 +74,14 @@ class AcademicYearController extends Controller
         $academicYear->update([
             'year' => $validated['year'],
             'semester' => $validated['semester'],
+            'is_active' => $validated['is_active'] ?? false,
         ]);
+
+        // If this year is set as active, deactivate all others
+        if ($validated['is_active'] ?? false) {
+            AcademicYear::where('id', '!=', $academicYear->id)
+                ->update(['is_active' => false]);
+        }
 
         return redirect()
             ->route('admin.academic-years.index')

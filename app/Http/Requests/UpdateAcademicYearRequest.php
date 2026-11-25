@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\AcademicYear;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAcademicYearRequest extends FormRequest
@@ -13,8 +14,18 @@ class UpdateAcademicYearRequest extends FormRequest
      */
     public function rules(): array
     {
+        $academicYear = $this->route('academic_year');
+
         return [
-            'year' => ['sometimes', 'required', 'string', 'regex:#^\d{4}/\d{4}$#', 'unique:academic_years,year,'.$this->route('academicYear')->id],
+            'year' => ['sometimes', 'required', 'string', 'regex:#^\d{4}/\d{4}$#', function ($attribute, $value, $fail) use ($academicYear) {
+                $query = \App\Models\AcademicYear::where('year', $value);
+                if ($academicYear) {
+                    $query->where('id', '!=', $academicYear->id);
+                }
+                if ($query->exists()) {
+                    $fail('Tahun ajaran sudah terdaftar.');
+                }
+            }],
             'semester' => ['sometimes', 'required', 'in:Ganjil,Genap'],
             'is_active' => ['sometimes', 'boolean'],
         ];

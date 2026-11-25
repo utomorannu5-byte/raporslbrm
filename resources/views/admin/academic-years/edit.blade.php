@@ -39,7 +39,7 @@
 
                         <div class="mb-3 form-check">
                             <input type="checkbox" name="is_active" id="is_active" class="form-check-input @error('is_active') is-invalid @enderror"
-                                {{ old('is_active') && $academicYear->is_active ? 'checked' : (old('is_active') ? 'checked' : '') }}>
+                                value="1" {{ (old('is_active', $academicYear->is_active) ? 'checked' : '') }}>
                             <label class="form-check-label small" for="is_active">Tahun Ajaran Aktif</label>
                             @error('is_active')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -48,10 +48,10 @@
                         {{-- Jika ini tahun ajaran yang aktif, cekbox otomatis centang --}}
 
                         <button type="submit" class="btn btn-primary mt-3">Simpan Perubahan</button>
-                        <a href="{{ route('admin.academic-years') }}" class="btn btn-outline-secondary">Batal</a>
+                        <a href="{{ route('admin.academic-years.index') }}" class="btn btn-outline-secondary">Batal</a>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</div>@endsection

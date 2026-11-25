@@ -48,6 +48,15 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="password_confirmation" class="form-label small">Konfirmasi Password Baru</label>
+                            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control"
+                                placeholder="Kosongkan jika tidak ingin mengganti">
+                            @error('password_confirmation')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
                             <label for="role" class="form-label small">Role</label>
                             <select name="role" id="role" class="form-control @error('role') is-invalid @enderror" required>
                                 <option value="admin" {{ $user->hasRole('admin') ? 'selected' : '' }}>Admin</option>
@@ -62,11 +71,11 @@
 
                         <div class="d-grid gap-2 mt-3">
                             <button type="submit" class="btn btn-info">Simpan Perubahan</button>
-                            <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary">Batal</a>
+                            <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">Batal</a>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</div>@endsection

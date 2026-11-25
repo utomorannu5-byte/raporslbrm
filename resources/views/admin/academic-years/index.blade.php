@@ -14,6 +14,47 @@
                     @endif
 
                     <div class="mb-3">
+                        <h5>Tambah Tahun Ajaran Baru</h5>
+                        <form action="{{ route('admin.academic-years.store') }}" method="POST" class="mb-3">
+                            @csrf
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label for="year" class="form-label small">Tahun Ajaran</label>
+                                    <input type="text" name="year" id="year" class="form-control @error('year') is-invalid @enderror"
+                                        value="{{ old('year') }}" required placeholder="Contoh: 2025/2026">
+                                    @error('year')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="semester" class="form-label small">Semester</label>
+                                    <select name="semester" id="semester" class="form-control @error('semester') is-invalid @enderror" required>
+                                        <option value="">-- Pilih --</option>
+                                        <option value="Ganjil" {{ old('semester') == 'Ganjil' ? 'selected' : '' }}>Ganjil</option>
+                                        <option value="Genap" {{ old('semester') == 'Genap' ? 'selected' : '' }}>Genap</option>
+                                    </select>
+                                    @error('semester')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check mt-4">
+                                        <input type="checkbox" name="is_active" id="is_active" class="form-check-input @error('is_active') is-invalid @enderror"
+                                            value="1" {{ old('is_active') ? 'checked' : '' }}>
+                                        <label class="form-check-label small" for="is_active">Aktifkan</label>
+                                        @error('is_active')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-success w-100">Simpan Tahun Ajaran</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="mb-3">
                         <h5>Set Tahun Ajaran Aktif</h5>
                         <p class="text-muted small">Sistem hanya boleh memiliki 1 tahun ajaran aktif.</p>
 

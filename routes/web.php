@@ -40,6 +40,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::resource('academic-years', AcademicYearController::class)
             ->except(['show']);
 
+        Route::post('academic-years/{academic_year}/toggle', [AcademicYearController::class, 'toggle'])
+            ->name('academic-years.toggle');
+
         Route::resource('subjects', SubjectController::class)
             ->except(['show']);
 
