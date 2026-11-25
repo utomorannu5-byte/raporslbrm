@@ -5,6 +5,9 @@ namespace Tests\Feature\Guru;
 use App\Models\AcademicGrade;
 use App\Models\AcademicYear;
 use App\Models\ClassRoom;
+use App\Models\CompetencyDomain;
+use App\Models\CompetencyIndicator;
+use App\Models\CompetencyGrade;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\User;
@@ -34,8 +37,12 @@ class InputNilaiLockedTest extends TestCase
             'academic_year_id' => $academicYear->id,
         ]);
 
+        $domain = CompetencyDomain::factory()->create(['name' => 'Kognitif']);
+        $indicator = CompetencyIndicator::factory()->create(['domain_id' => $domain->id, 'name' => 'Menyimak']);
+
         $subject = Subject::factory()->create(['default_kkm' => 75]);
         $class->subjects()->attach($subject);
+        $class->competencyIndicators()->attach($indicator);
 
         $student = Student::factory()->create(['class_id' => $class->id]);
 
@@ -47,6 +54,14 @@ class InputNilaiLockedTest extends TestCase
             'kkm' => 75,
             'score_number' => 80,
             'score_text' => 'Delapan puluh',
+            'is_submitted' => true,
+        ]);
+
+        CompetencyGrade::create([
+            'student_id' => $student->id,
+            'academic_year_id' => $academicYear->id,
+            'indicator_id' => $indicator->id,
+            'value' => 'M',
             'is_submitted' => true,
         ]);
 
@@ -73,10 +88,14 @@ class InputNilaiLockedTest extends TestCase
         $teacher = User::factory()->create()->assignRole('guru');
         $academicYear = AcademicYear::factory()->create(['is_active' => true]);
 
+        $domain = CompetencyDomain::factory()->create(['name' => 'Kognitif']);
+        $indicator = CompetencyIndicator::factory()->create(['domain_id' => $domain->id, 'name' => 'Menyimak']);
+
         $class = ClassRoom::factory()->create([
             'teacher_id' => $teacher->id,
             'academic_year_id' => $academicYear->id,
         ]);
+        $class->competencyIndicators()->attach($indicator);
 
         $subject = Subject::factory()->create(['default_kkm' => 75]);
         $class->subjects()->attach($subject);
@@ -93,6 +112,14 @@ class InputNilaiLockedTest extends TestCase
             'is_submitted' => true,
         ]);
 
+        CompetencyGrade::create([
+            'student_id' => $student->id,
+            'academic_year_id' => $academicYear->id,
+            'indicator_id' => $indicator->id,
+            'value' => 'M',
+            'is_submitted' => true,
+        ]);
+
         $response = $this->actingAs($teacher)->get("/guru/input-nilai/{$student->id}");
 
         $response->assertOk();
@@ -105,10 +132,14 @@ class InputNilaiLockedTest extends TestCase
         $teacher = User::factory()->create()->assignRole('guru');
         $academicYear = AcademicYear::factory()->create(['is_active' => true]);
 
+        $domain = CompetencyDomain::factory()->create(['name' => 'Kognitif']);
+        $indicator = CompetencyIndicator::factory()->create(['domain_id' => $domain->id, 'name' => 'Menyimak']);
+
         $class = ClassRoom::factory()->create([
             'teacher_id' => $teacher->id,
             'academic_year_id' => $academicYear->id,
         ]);
+        $class->competencyIndicators()->attach($indicator);
 
         $subject = Subject::factory()->create(['default_kkm' => 75]);
         $class->subjects()->attach($subject);
@@ -122,6 +153,14 @@ class InputNilaiLockedTest extends TestCase
             'kkm' => 75,
             'score_number' => 80,
             'score_text' => 'Delapan puluh',
+            'is_submitted' => true,
+        ]);
+
+        CompetencyGrade::create([
+            'student_id' => $student->id,
+            'academic_year_id' => $academicYear->id,
+            'indicator_id' => $indicator->id,
+            'value' => 'M',
             'is_submitted' => true,
         ]);
 

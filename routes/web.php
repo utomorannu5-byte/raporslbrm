@@ -74,6 +74,9 @@ Route::middleware(['auth', 'role:guru'])
         Route::put('/input-nilai/{student}', [InputNilaiController::class, 'update'])
             ->name('input-nilai.update');
 
+        Route::post('/input-nilai/{student}/submit', [InputNilaiController::class, 'submit'])
+            ->name('input-nilai.submit');
+
         Route::get('/grade-conversion/{score}', [InputNilaiController::class, 'convertGrade'])
             ->name('grade-conversion');
     });

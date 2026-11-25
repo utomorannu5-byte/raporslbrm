@@ -22,6 +22,8 @@ class StoreInputNilaiRequest extends FormRequest
             'sick' => ['sometimes', 'integer', 'min:0'],
             'permission' => ['sometimes', 'integer', 'min:0'],
             'absent' => ['sometimes', 'integer', 'min:0'],
+            'competencies' => ['sometimes', 'array'],
+            'competencies.*' => ['nullable', 'in:M,AV,AF,AP'],
         ];
     }
 

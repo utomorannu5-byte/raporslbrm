@@ -12,7 +12,7 @@
                     </div>
                     <div>
                         @if ($isLocked)
-                            <span class="badge bg-danger fs-6">TERKUNCI</span>
+                            <span class="badge bg-success fs-6">TERKUNCI</span>
                         @else
                             <span class="badge bg-secondary fs-6">DRAFT</span>
                         @endif
@@ -33,8 +33,8 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link disabled" id="kompetensi-tab" data-bs-toggle="tab" data-bs-target="#kompetensi" type="button" role="tab" disabled>
-                                Kompetensi <span class="badge bg-secondary ms-1">Segera</span>
+                            <button class="nav-link" id="kompetensi-tab" data-bs-toggle="tab" data-bs-target="#kompetensi" type="button" role="tab">
+                                Kompetensi
                             </button>
                         </li>
                     </ul>
@@ -160,11 +160,99 @@
                             </form>
                         </div>
 
-                        <!-- Tab Kompetensi (Coming Soon) -->
+                        <!-- Tab Kompetensi -->
                         <div class="tab-pane fade" id="kompetensi" role="tabpanel">
-                            <div class="alert alert-info">
-                                <i class="bi bi-clock-history"></i> Fitur Input Nilai Kompetensi akan tersedia di tahap berikutnya (Tahap 3B).
-                            </div>
+                            <form action="{{ route('guru.input-nilai.update', $student->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+
+                                <h5 class="mb-3">Nilai Kompetensi</h5>
+                                <p class="text-muted small mb-4">Pilih satu tingkat kemampuan untuk setiap indikator: <strong>M</strong> = Mandiri, <strong>AV</strong> = Dengan Bantuan Verbal, <strong>AF</strong> = Dengan Bantuan Fisik, <strong>AP</strong> = Dengan Bantuan Penuh. Kosongkan jika belum dinilai.</p>
+
+                                @foreach ($indicatorsByDomain as $domainId => $data)
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <strong>{{ $data['domain']->name }}</strong>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-striped small mb-0">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th style="width: 60%">Indikator</th>
+                                                            <th style="width: 10%" class="text-center">M</th>
+                                                            <th style="width: 10%" class="text-center">AV</th>
+                                                            <th style="width: 10%" class="text-center">AF</th>
+                                                            <th style="width: 10%" class="text-center">AP</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($data['indicators'] as $indicator)
+                                                            @php
+                                                                $compGrade = $competencyGrades->get($indicator->id);
+                                                                $currentValue = $compGrade->value ?? '';
+                                                                $isCompLocked = $compGrade->is_submitted ?? false;
+                                                            @endphp
+                                                            <tr>
+                                                                <td>
+                                                                    <strong>{{ $indicator->name }}</strong>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <div class="form-check form-check-inline">
+                                                                        <input class="form-check-input" type="radio" name="competencies[{{ $indicator->id }}]"
+                                                                               value="M"
+                                                                               {{ $currentValue === 'M' ? 'checked' : '' }}
+                                                                               @if($isLocked || $isCompLocked) disabled @endif>
+                                                                    </div>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <div class="form-check form-check-inline">
+                                                                        <input class="form-check-input" type="radio" name="competencies[{{ $indicator->id }}]"
+                                                                               value="AV"
+                                                                               {{ $currentValue === 'AV' ? 'checked' : '' }}
+                                                                               @if($isLocked || $isCompLocked) disabled @endif>
+                                                                    </div>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <div class="form-check form-check-inline">
+                                                                        <input class="form-check-input" type="radio" name="competencies[{{ $indicator->id }}]"
+                                                                               value="AF"
+                                                                               {{ $currentValue === 'AF' ? 'checked' : '' }}
+                                                                               @if($isLocked || $isCompLocked) disabled @endif>
+                                                                    </div>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <div class="form-check form-check-inline">
+                                                                        <input class="form-check-input" type="radio" name="competencies[{{ $indicator->id }}]"
+                                                                               value="AP"
+                                                                               {{ $currentValue === 'AP' ? 'checked' : '' }}
+                                                                               @if($isLocked || $isCompLocked) disabled @endif>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                                <hr>
+
+                                @if (!$isLocked)
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-save"></i> Simpan Draft
+                                        </button>
+                                        <a href="{{ route('guru.input-nilai.index') }}" class="btn btn-outline-secondary">Kembali</a>
+                                    </div>
+                                @else
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-lock-fill"></i> Nilai sudah terkunci dan tidak dapat diubah.
+                                    </div>
+                                @endif
+                            </form>
                         </div>
                     </div>
                 </div>
