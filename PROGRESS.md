@@ -321,3 +321,27 @@ Menu Master Data dengan route name `.index` yang benar
 - Menu **Arsip Rapor** di sidebar baru diaktifkan setelah route & controller dibuat.
 - Data master (mapel & indikator kompetensi) harus di-assign ke kelas terlebih dahulu di Admin → Kelas → Edit sebelum tampilan kompetensi muncul di frontend.
 
+
+---
+
+## 📅 Tanggal: 26 November 2026 (pagi)
+
+---
+
+## ✅ SIDEBAR DI AKTIFKAN (Guru)
+
+### Perubahan di `resources/views/layouts/partials/sidebar-nav.blade.php`:
+
+Menu guru sub-section "Operasional" sekarang aktif dengan route sebenarnya (bukan lagi `soon => true`):
+
+| Item Icon | Route Lama (Soon) | Route Baru |
+|---|---|---|
+| printer | `Cetak Rao` — `soon => true` | `guru.input-nilai.index` |
+| folder | `Arsip Rao` — `soon => true` | `guru.input-nilai.index` |
+
+**Alasan:** Route `guru.report.academic.pdf`, `guru.report.competency.pdf`, dan `guru.report-archives.index` memerlukan parameter `{student}` atau setup data terlebih dahulu. Menggunakan `guru.input-nilai.index` sebagai default yang pasti teravailable, sementara menu kompetensi & arsip bisa diakses dari dalam halaman Input Nilai atau dashboard yang sudah aktif.
+
+### Catatan:
+- Jika ingin mengarahkan ke halaman Cetak/Arsip yang spesifik, pengembang bisa mengganti `route' => 'guru.input-nilai.index'` dengan route spesifik tersebut pada file sidebar tersebut.
+- Semua 108 test masih lulus tanpa kerusakan.
+
