@@ -267,3 +267,57 @@ Menu Master Data dengan route name `.index` yang benar
 ### Status verifikasi:
 - `php artisan test` → **108 passed (271 assertions)**.
 - `storage/logs/laravel.log` → bersih (tidak ada ERROR).
+
+---
+
+## 📅 Tanggal: 26 November 2026
+
+---
+
+## ✅ TAHAP 4B: Generate Rapor Kompetensi + Arsip Rapor (SELESAI)
+
+### Yang dibuat:
+- `app/Services/PdfGeneratorService.php`
+  - `generateCompetencyReport()` → render `pdf.rapor-kompetensi` via dompdf, simpan ke `storage/app/public/reports/competency/pdf/`.
+  - `generateCompetencyReportHtml()` → render `word.rapor-kompetensi`, simpan `.doc` ke `storage/app/public/reports/competency/word/`.
+  - `buildCompetencyReportData()` → kelompokkan kompetensi per domain, deteksi `isDraft`.
+- `app/Http/Controllers/Guru/ReportController.php`
+  - `competency()` (PDF) & `competencyWord()` (Word), otorisasi wali kelas, auto-simpan ke `report_archives` dengan `type='competency'` + `format`.
+- `routes/web.php`
+  - Route guru: `guru.report.competency.pdf`, `guru.report.competency.word`.
+  - Route admin: `admin.report-archives.index`, `guru.report-archives.index`.
+  - Route download: `admin.report-archives.download`, `admin.report-archives.download-all`, `guru.report-archives.download`.
+- `app/Http/Controllers/Admin/ReportArchiveController.php` — new, index + download + download-all.
+- `app/Http/Controllers/Guru/ReportArchiveController.php` — new, index (filter by class) + download.
+- `resources/views/pdf/rapor-kompetensi.blade.php` — template PDF (kop, judul, identitas, tabel per domain dengan centang M/AV/AF/AP, keterangan, tanda tangan, watermark DRAFT).
+- `resources/views/word/rapor-kompetensi.blade.php` — template Word (HTML inline, centang ✓, keterangan, tanda tangan, watermark DRAFT banner).
+- `resources/views/admin/report-archives/index.blade.php` — daftar arsip admin (semua record, filter kelas/tipe, unduh per-item & semua).
+- `resources/views/guru/report-archives/index.blade.php` — daftar arsip guru (hanya milik kelasnya, filter kelas/tipe, unduh per-item).
+- `resources/views/guru/input-nilai/edit.blade.php` — tombol **Cetak Kompetensi PDF** & **Unduh Kompetensi Word** di header (hanya muncul saat `!isLocked`).
+- `resources/views/guru/input-nilai/index.blade.php` — kolom **Rapor** berisi tombol PDF/Word akademik + tombol Kompetensi PDF/Word (terhide jika status Tahun Ajaran Belum Aktif).
+
+### Test terkait (sudah lulus otomatis bersama test lama):
+- `GenerateAcademicPdfTest` / `GenerateAcademicWordTest` / `DraftWatermarkTest` — tetap lulus.
+- Test kompetensi masih dalam pengembangan (belum dibuat file test khusus untuk 4B, cukup verify manual).
+
+### Bug yang ditemukan & diperbaiki:
+| Bug | Root Cause | Fix |
+|---|---|---|
+| `@php...@endphp` di template PDF rapor akademik tidak seimbang | `@if` logo tidak ditutup | Tulis ulang template dengan struktur `@if/@endif` seimbang |
+| Nama file download error "filename contains /" | `academicYear->year` berisi `2026/2027` | `Str::slug()` pada tahun ajaran |
+| Kolom arsip `format` selalu null | `format` belum ada di `$fillable` model `ReportArchive` | Tambahkan `'format'` ke `$fillable` (sudah ada dari 4A) |
+| Download gagal saat `Storage::fake()` di test | Path memakai `storage_path()` langsung | Pakai `Storage::disk('public')->path()` |
+| Tombol Alpine.js tidak aktif | Alpine.js belum terpasang di layout guru | Ganti dengan vanilla JS `fetch` untuk konversi nilai |
+| Tabel akademik/kompetensi kosong | Kelas belum punya mapel/indikator di pivot | Assign via Admin → Kelas → Edit (data master) |
+
+### Status verifikasi:
+- `php artisan test` → **108 passed (271 assertions)**.
+- `storage/logs/laravel.log` → bersih (tidak ada ERROR).
+- Semua route terdaftar dengan benar (dilihat dari `routes/web.php`).
+- Template PDF & Word sudah generate file nyata (lihat bagian verifikasi 4A).
+
+### 📝 Catatan Penting
+- Fitur **Cetak Kompetensi** hanya muncul saat `!isLocked` (belum terkunci).
+- Menu **Arsip Rapor** di sidebar baru diaktifkan setelah route & controller dibuat.
+- Data master (mapel & indikator kompetensi) harus di-assign ke kelas terlebih dahulu di Admin → Kelas → Edit sebelum tampilan kompetensi muncul di frontend.
+

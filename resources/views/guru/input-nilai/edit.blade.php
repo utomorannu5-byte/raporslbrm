@@ -23,6 +23,14 @@
                         <a href="{{ route('guru.report.academic.word', $student->id) }}" class="btn btn-outline-primary btn-sm">
                             Unduh Word
                         </a>
+                        @unless ($isLocked)
+                            <a href="{{ route('guru.report.competency.pdf', $student->id) }}" class="btn btn-success btn-sm" target="_blank">
+                                Cetak Kompetensi PDF
+                            </a>
+                            <a href="{{ route('guru.report.competency.word', $student->id) }}" class="btn btn-outline-success btn-sm">
+                                Unduh Kompetensi Word
+                            </a>
+                        @endif
                     </div>
                 </div>
                 <div class="card-body">

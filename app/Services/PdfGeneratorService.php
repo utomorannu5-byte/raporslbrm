@@ -105,4 +105,95 @@ class PdfGeneratorService
 
         return "reports/academic/{$format}/rapor-akademik-{$student->id}-{$academicYear->id}.{$extension}";
     }
+
+    /**
+     * Generate Rapor Kompetensi PDF dan simpan ke storage.
+     *
+     * @return array{path: string, data: array}
+     */
+    public function generateCompetencyReport(Student $student, AcademicYear $academicYear): array
+    {
+        $data = $this->buildCompetencyReportData($student, $academicYear);
+
+        $pdf = Pdf::loadView('pdf.rapor-kompetensi', $data)
+            ->setPaper('a4', 'portrait');
+
+        $path = $this->competencyPath($student, $academicYear, 'pdf');
+
+        Storage::disk('public')->put($path, $pdf->output());
+
+        return [
+            'path' => $path,
+            'data' => $data,
+        ];
+    }
+
+    /**
+     * Generate Rapor Kompetensi versi HTML lalu simpan sebagai file Word (.doc).
+     *
+     * @return array{path: string, html: string, data: array}
+     */
+    public function generateCompetencyReportHtml(Student $student, AcademicYear $academicYear): array
+    {
+        $data = $this->buildCompetencyReportData($student, $academicYear);
+
+        $html = view('word.rapor-kompetensi', $data)->render();
+
+        $path = $this->competencyPath($student, $academicYear, 'word');
+
+        Storage::disk('public')->put($path, $html);
+
+        return [
+            'path' => $path,
+            'html' => $html,
+            'data' => $data,
+        ];
+    }
+
+    /**
+     * Path penyimpanan file rapor kompetensi.
+     */
+    protected function competencyPath(Student $student, AcademicYear $academicYear, string $format): string
+    {
+        $extension = $format === 'word' ? 'doc' : 'pdf';
+
+        return "reports/competency/{$format}/rapor-kompetensi-{$student->id}-{$academicYear->id}.{$extension}";
+    }
+
+    /**
+     * Kumpulkan seluruh data yang dibutuhkan template rapor kompetensi.
+     */
+    protected function buildCompetencyReportData(Student $student, AcademicYear $academicYear): array
+    {
+        $student->loadMissing(['classRoom', 'classRoom.teacher']);
+
+        $school = SchoolProfile::first();
+
+        $competencyGrades = CompetencyGrade::with(['indicator', 'indicator.domain'])
+            ->where('student_id', $student->id)
+            ->where('academic_year_id', $academicYear->id)
+            ->get();
+
+        // Kelompokkan per domain
+        $gradesByDomain = $competencyGrades->groupBy(fn ($grade) => $grade->indicator->domain->name);
+
+        // Urutkan domain berdasarkan sort_order
+        $sortedDomains = CompetencyDomain::with('indicators')
+            ->whereHas('indicators', fn ($q) => $q->whereIn('id', $competencyGrades->pluck('indicator_id')))
+            ->orderBy('sort_order')
+            ->get();
+
+        $isDraft = $competencyGrades->where('is_submitted', false)->count() > 0
+            || $competencyGrades->isEmpty();
+
+        return [
+            'student' => $student,
+            'academicYear' => $academicYear,
+            'school' => $school,
+            'gradesByDomain' => $gradesByDomain,
+            'sortedDomains' => $sortedDomains,
+            'isDraft' => $isDraft,
+            'printDate' => now()->locale('id')->translatedFormat('d F Y'),
+        ];
+    }
 }

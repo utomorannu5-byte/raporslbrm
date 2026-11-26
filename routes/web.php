@@ -61,6 +61,15 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('grade-conversions', GradeConversionController::class)
             ->except(['show']);
+
+        Route::get('report-archives', [Admin\ReportArchiveController::class, 'index'])
+            ->name('admin.report-archives.index');
+
+        Route::get('report-archives/download/{id}', [Admin\ReportArchiveController::class, 'download'])
+            ->name('admin.report-archives.download');
+
+        Route::get('report-archives/download-all', [Admin\ReportArchiveController::class, 'downloadAll'])
+            ->name('admin.report-archives.download-all');
     });
 
 Route::middleware(['auth', 'role:guru'])
@@ -89,6 +98,18 @@ Route::middleware(['auth', 'role:guru'])
 
         Route::get('/report/{student}/academic/word', [ReportController::class, 'academicWord'])
             ->name('report.academic.word');
+
+        Route::get('/report/{student}/competency', [ReportController::class, 'competency'])
+            ->name('report.competency.pdf');
+
+        Route::get('/report/{student}/competency/word', [ReportController::class, 'competencyWord'])
+            ->name('report.competency.word');
+
+        Route::get('/report-archives', [Guru\ReportArchiveController::class, 'index'])
+            ->name('guru.report-archives.index');
+
+        Route::get('/report-archives/download/{id}', [Guru\ReportArchiveController::class, 'download'])
+            ->name('guru.report-archives.download');
     });
 
 Route::middleware('auth')->group(function () {

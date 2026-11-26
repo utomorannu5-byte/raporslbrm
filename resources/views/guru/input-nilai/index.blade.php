@@ -80,6 +80,14 @@
                                                 <a href="{{ route('guru.report.academic.word', $item['student']->id) }}"
                                                    class="btn btn-sm btn-outline-primary"
                                                    title="Unduh Rapor Word">Word</a>
+                                                @unless ($item['status'] === 'Tahun Ajaran Belum Aktif')
+                                                    <a href="{{ route('guru.report.competency.pdf', $item['student']->id) }}"
+                                                       class="btn btn-sm btn-success"
+                                                       title="Cetak Rapor Kompetensi">Kompetensi PDF</a>
+                                                    <a href="{{ route('guru.report.competency.word', $item['student']->id) }}"
+                                                       class="btn btn-sm btn-outline-success"
+                                                       title="Unduh Rapor Kompetensi">Kompetensi Word</a>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
