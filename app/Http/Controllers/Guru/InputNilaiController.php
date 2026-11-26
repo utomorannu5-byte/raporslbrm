@@ -53,8 +53,6 @@ class InputNilaiController extends Controller
                 $submittedCompetency = $compGrades->where('is_submitted', true)->count();
                 $filledAcademic = $grades->where('score_number', '!=', null)->count();
                 $filledCompetency = $compGrades->where('value', '!=', null)->count();
-                $totalSubjects = $student->classRoom->subjects->count();
-                $totalIndicators = $student->classRoom->competencyIndicators->count();
 
                 $allSubmitted = ($submittedAcademic === $totalSubjects && $totalSubjects > 0)
                     && ($submittedCompetency === $totalIndicators && $totalIndicators > 0);
@@ -147,24 +145,6 @@ class InputNilaiController extends Controller
                 ]
             );
         })->keyBy('indicator_id');
-
-        // Get or create academic grades for each subject
-        $subjects = $student->classRoom->subjects()->orderBy('name')->get();
-        $grades = $subjects->map(function ($subject) use ($student, $academicYear) {
-            return AcademicGrade::firstOrCreate(
-                [
-                    'student_id' => $student->id,
-                    'academic_year_id' => $academicYear->id,
-                    'subject_id' => $subject->id,
-                ],
-                [
-                    'kkm' => $subject->default_kkm,
-                    'score_number' => null,
-                    'score_text' => null,
-                    'is_submitted' => false,
-                ]
-            );
-        });
 
         // Get or create student attitudes with defaults
         $attitudes = StudentAttitude::firstOrCreate(

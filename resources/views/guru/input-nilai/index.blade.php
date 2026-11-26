@@ -37,12 +37,13 @@
                                     <th>Kelas</th>
                                     <th>Status</th>
                                     <th>Aksi</th>
+                                    <th>Rapor</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @if ($studentsWithStatus->isEmpty())
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">
+                                        <td colspan="7" class="text-center text-muted py-4">
                                             Anda belum ditugaskan sebagai wali kelas manapun.
                                         </td>
                                     </tr>
@@ -70,6 +71,15 @@
                                                    @if ($item['status'] === 'Tahun Ajaran Belum Aktif') disabled @endif>
                                                    Input Nilai
                                                 </a>
+                                            </td>
+                                            <td class="text-nowrap">
+                                                <a href="{{ route('guru.report.academic.pdf', $item['student']->id) }}"
+                                                   class="btn btn-sm btn-primary"
+                                                   title="Cetak Rapor PDF"
+                                                   target="_blank">PDF</a>
+                                                <a href="{{ route('guru.report.academic.word', $item['student']->id) }}"
+                                                   class="btn btn-sm btn-outline-primary"
+                                                   title="Unduh Rapor Word">Word</a>
                                             </td>
                                         </tr>
                                     @endforeach

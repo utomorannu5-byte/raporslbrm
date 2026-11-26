@@ -13,6 +13,7 @@ class ReportArchive extends Model
         'student_id',
         'academic_year_id',
         'type',
+        'format',
         'file_path',
     ];
 

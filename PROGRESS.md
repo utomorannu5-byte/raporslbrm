@@ -197,3 +197,73 @@ Menu Master Data dengan route name `.index` yang benar
 | Tanggal | Bug | Root Cause | Fix |
 |---|---|---|---|
 | 24 Nov 2026 | Sidebar menutupi halaman & navbar di bawah (Subjects, Users, Academic Years) | 3 view files (`subjects/index`, `users/index`, `academic-years/index`) missing `@endsection` | Tambah `@endsection` di akhir file untuk menutup `@section('content')` |
+
+---
+
+## 📅 Tanggal: 24-26 November 2026
+
+---
+
+## ✅ TAHAP 3A: Input Nilai Akademik (SELESAI)
+
+### Yang dibuat:
+- `app/Services/GradeConversionService.php` — konversi nilai angka (0–100) → huruf & teks angka.
+- `database/seeders/GradeConversionSeeder.php` — 101 baris konversi (0–100) lengkap.
+- `app/Http/Controllers/Guru/InputNilaiController.php` — `index`, `edit`, `update`, `convertGrade`.
+- Layout guru: `resources/views/guru/layouts/app.blade.php` + sidebar role-based.
+- View: `resources/views/guru/input-nilai/index.blade.php` dan `edit.blade.php` (Tab Akademik).
+- Route guru: `guru.input-nilai.index/edit/update`, `guru.grade-conversion`.
+
+### Aturan akses:
+- Guru hanya bisa mengakses siswa dari kelas yang ia ampu (`classRoom.teacher_id === auth()->id()`), selain itu 403.
+
+---
+
+## ✅ TAHAP 3B: Input Nilai Kompetensi, Submit & Kunci (SELESAI)
+
+### Yang dibuat:
+- Tab Kompetensi pada `guru/input-nilai/edit.blade.php` (radio M / AV / AF / AP per indikator).
+- `InputNilaiController::submit()` — validasi kelengkapan nilai akademik + kompetensi + kepribadian/absensi, simpan dalam `DB::transaction`, set `is_submitted = true`.
+- Halaman menjadi read-only setelah terkunci (badge TERKUNCI).
+- Route: `guru.input-nilai.submit`.
+
+### Test terkait:
+- `InputNilaiAccessTest`, `InputNilaiDraftTest`, `InputNilaiLockedTest`, `CompetencyDraftTest`, `SubmitLockedTest`, `ReSubmitTest`, `GradeConversionServiceTest`.
+
+---
+
+## ✅ TAHAP 4A: Generate Rapor Akademik (PDF & Word) (SELESAI)
+
+### Yang dibuat:
+- `app/Services/PdfGeneratorService.php`
+  - `generateAcademicReport()` → render `pdf.rapor-akademik` via dompdf, simpan ke `storage/app/public/reports/academic/pdf/{student_id}-{year_id}.pdf`.
+  - `generateAcademicReportHtml()` → render `word.rapor-akademik`, simpan `.doc` ke `storage/app/public/reports/academic/word/`.
+  - Deteksi `isDraft` (belum ada nilai / ada nilai belum submit / data kepribadian belum lengkap).
+- `app/Http/Controllers/Guru/ReportController.php`
+  - `academic()` (PDF) dan `academicWord()` (Word), otorisasi wali kelas, auto-simpan ke `report_archives` dengan `type='academic'` + `format`.
+- Migration baru: `2026_11_25_222207_add_format_to_report_archives_table.php` (kolom `format` enum pdf/word, nullable).
+- Template: `resources/views/pdf/rapor-akademik.blade.php` dan `resources/views/word/rapor-akademik.blade.php`.
+  - Kop surat (+ logo base64), judul, identitas siswa, tabel nilai (No/Mapel/KKM/Angka/Huruf), kepribadian, absensi, tanda tangan, footer tanggal.
+  - Watermark **DRAFT** merah diagonal (PDF via CSS transform dompdf 3.x; Word via banner DRAFT).
+- Tombol "Cetak PDF" & "Unduh Word" di header `guru/input-nilai/edit` + badge FINAL saat terkunci.
+- Kolom "Rapor" (tombol PDF & Word) di `guru/input-nilai/index`.
+- Route: `guru.report.academic.pdf`, `guru.report.academic.word`.
+
+### Test terkait (semua lulus):
+- `GenerateAcademicPdfTest` — PDF 200, file tersimpan, arsip `format=pdf`, guru lain 403, watermark DRAFT muncul/hilang.
+- `GenerateAcademicWordTest` — Word 200 (`application/msword`), file `.doc` tersimpan, arsip `format=word`, guru lain 403.
+- `DraftWatermarkTest` — watermark PDF & Word mengikuti status submit.
+
+### Bug yang ditemukan & diperbaiki saat implementasi:
+| Bug | Root Cause | Fix |
+|---|---|---|
+| PDF 500 "unexpected end of file, expecting elseif/else/endif" | `@if` logo di template PDF tidak ditutup | Tulis ulang template dengan struktur `@if/@endif` seimbang |
+| Watermark tidak terlihat sebagai teks di PDF | dompdf mengompres content stream (FlateDecode) | Template pakai watermark teks + helper test mendekompresi stream |
+| Nama file download error "filename contains /" | `academicYear->year` berisi `2026/2027` | `Str::slug()` pada tahun ajaran |
+| Kolom arsip `format` selalu null | `format` belum ada di `$fillable` model `ReportArchive` | Tambahkan `'format'` ke `$fillable` |
+| Download gagal saat `Storage::fake()` di test | Path memakai `storage_path()` langsung | Pakai `Storage::disk('public')->path()` |
+| Nilai KKM kosong di rapor | Template memakai `$grade->kmm` (salah) | Ganti ke `$grade->kkm` sesuai kolom DB |
+
+### Status verifikasi:
+- `php artisan test` → **108 passed (271 assertions)**.
+- `storage/logs/laravel.log` → bersih (tidak ada ERROR).

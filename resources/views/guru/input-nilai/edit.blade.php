@@ -5,17 +5,24 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div>
                         <h4 class="mb-0">Input Nilai: {{ $student->name }}</h4>
                         <small>NISN: {{ $student->nisn ?? '-' }} | Kelas: {{ $student->classRoom->name ?? '-' }} | {{ $academicYear->year }} - {{ $academicYear->semester }}</small>
                     </div>
-                    <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
                         @if ($isLocked)
                             <span class="badge bg-success fs-6">TERKUNCI</span>
+                            <span class="badge bg-primary fs-6">FINAL</span>
                         @else
                             <span class="badge bg-secondary fs-6">DRAFT</span>
                         @endif
+                        <a href="{{ route('guru.report.academic.pdf', $student->id) }}" class="btn btn-primary btn-sm" target="_blank">
+                            Cetak PDF
+                        </a>
+                        <a href="{{ route('guru.report.academic.word', $student->id) }}" class="btn btn-outline-primary btn-sm">
+                            Unduh Word
+                        </a>
                     </div>
                 </div>
                 <div class="card-body">
@@ -24,6 +31,17 @@
                     @endif
                     @if (session('error'))
                         <div class="alert alert-danger mb-3">{{ session('error') }}</div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="alert alert-danger mb-3">
+                            <strong>Periksa kembali isian Anda:</strong>
+                            <ul class="mb-0 mt-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                     @endif
 
                     <ul class="nav nav-tabs mb-4" id="inputNilaiTabs" role="tablist">
@@ -47,6 +65,12 @@
                                 @method('PUT')
 
                                 <h5 class="mb-3">Nilai Akademik</h5>
+                                @if ($grades->isEmpty())
+                                    <div class="alert alert-warning">
+                                        Belum ada mata pelajaran yang di-assign ke kelas ini.
+                                        Hubungi admin untuk mengatur mapel pada menu <strong>Kelas</strong>.
+                                    </div>
+                                @else
                                 <div class="table-responsive mb-4">
                                     <table class="table table-bordered table-striped small">
                                         <thead class="table-light">
@@ -89,6 +113,7 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                @endif
 
                                 <hr>
 
@@ -145,16 +170,16 @@
                                 @if (!$isLocked)
                                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                         <button type="submit" class="btn btn-primary">
-                                            <i class="bi bi-save"></i> Simpan Draft
+                                            Simpan Draft
                                         </button>
-                                        <button type="button" class="btn btn-success" disabled title="Fitur Submit & Kunci akan tersedia di tahap berikutnya">
-                                            <i class="bi bi-lock"></i> Submit & Kunci
+                                        <button type="submit" form="submitForm" class="btn btn-success btn-submit">
+                                            Submit &amp; Kunci
                                         </button>
                                         <a href="{{ route('guru.input-nilai.index') }}" class="btn btn-outline-secondary">Kembali</a>
                                     </div>
                                 @else
                                     <div class="alert alert-warning">
-                                        <i class="bi bi-lock-fill"></i> Nilai sudah terkunci dan tidak dapat diubah.
+                                        Nilai sudah terkunci dan tidak dapat diubah.
                                     </div>
                                 @endif
                             </form>
@@ -168,6 +193,13 @@
 
                                 <h5 class="mb-3">Nilai Kompetensi</h5>
                                 <p class="text-muted small mb-4">Pilih satu tingkat kemampuan untuk setiap indikator: <strong>M</strong> = Mandiri, <strong>AV</strong> = Dengan Bantuan Verbal, <strong>AF</strong> = Dengan Bantuan Fisik, <strong>AP</strong> = Dengan Bantuan Penuh. Kosongkan jika belum dinilai.</p>
+
+                                @if ($indicatorsByDomain->isEmpty())
+                                    <div class="alert alert-warning">
+                                        Belum ada indikator kompetensi yang di-assign ke kelas ini.
+                                        Hubungi admin untuk mengatur indikator pada menu <strong>Kelas</strong>.
+                                    </div>
+                                @endif
 
                                 @foreach ($indicatorsByDomain as $domainId => $data)
                                     <div class="card mb-3">
@@ -243,18 +275,27 @@
                                 @if (!$isLocked)
                                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                         <button type="submit" class="btn btn-primary">
-                                            <i class="bi bi-save"></i> Simpan Draft
+                                            Simpan Draft
+                                        </button>
+                                        <button type="submit" form="submitForm" class="btn btn-success btn-submit">
+                                            Submit &amp; Kunci
                                         </button>
                                         <a href="{{ route('guru.input-nilai.index') }}" class="btn btn-outline-secondary">Kembali</a>
                                     </div>
                                 @else
                                     <div class="alert alert-warning">
-                                        <i class="bi bi-lock-fill"></i> Nilai sudah terkunci dan tidak dapat diubah.
+                                        Nilai sudah terkunci dan tidak dapat diubah.
                                     </div>
                                 @endif
                             </form>
                         </div>
                     </div>
+
+                    @if (! $isLocked)
+                        <form id="submitForm" action="{{ route('guru.input-nilai.submit', $student->id) }}" method="POST">
+                            @csrf
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>
@@ -264,23 +305,71 @@
 
 @push('scripts')
 <script>
-    // Alpine.js component for auto-converting score to text
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('gradeConverter', () => ({
-            async convertScore(score, targetId) {
-                if (score === '' || score === null) {
-                    document.getElementById(targetId).value = '';
+    document.addEventListener('DOMContentLoaded', function () {
+        // Konversi otomatis nilai angka -> teks (huruf) saat guru mengetik.
+        var convertScore = async function (input) {
+            var target = document.getElementById(input.dataset.scoreTextTarget);
+
+            if (!target) {
+                return;
+            }
+
+            var raw = input.value.trim();
+
+            if (raw === '') {
+                target.value = '';
+                return;
+            }
+
+            var score = Number(raw);
+
+            if (!Number.isInteger(score) || score < 0 || score > 100) {
+                target.value = '';
+                return;
+            }
+
+            try {
+                var response = await fetch('{{ url('/guru/grade-conversion') }}/' + score, {
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    target.value = '';
                     return;
                 }
-                try {
-                    const response = await fetch(`/guru/grade-conversion/${score}`);
-                    const data = await response.json();
-                    document.getElementById(targetId).value = data.text;
-                } catch (e) {
-                    console.error('Gagal konversi nilai:', e);
-                }
+
+                var data = await response.json();
+                target.value = data.text || '';
+            } catch (error) {
+                console.error('Gagal konversi nilai:', error);
+                target.value = '';
             }
-        }));
+        };
+
+        document.querySelectorAll('.score-input').forEach(function (input) {
+            input.addEventListener('input', function () {
+                convertScore(input);
+            });
+
+            // Isi otomatis nilai huruf saat halaman dibuka.
+            if (input.value.trim() !== '') {
+                convertScore(input);
+            }
+        });
+
+        // Konfirmasi sebelum submit & kunci.
+        document.querySelectorAll('.btn-submit').forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                var confirmed = window.confirm(
+                    'Setelah submit, nilai akan TERKUNCI dan tidak bisa diubah lagi. ' +
+                    'Pastikan draft sudah disimpan. Lanjutkan?'
+                );
+
+                if (!confirmed) {
+                    event.preventDefault();
+                }
+            });
+        });
     });
 </script>
 @endpush

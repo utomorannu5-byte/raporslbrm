@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\Guru\InputNilaiController;
+use App\Http\Controllers\Guru\ReportController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -82,6 +83,12 @@ Route::middleware(['auth', 'role:guru'])
 
         Route::get('/grade-conversion/{score}', [InputNilaiController::class, 'convertGrade'])
             ->name('grade-conversion');
+
+        Route::get('/report/{student}/academic', [ReportController::class, 'academic'])
+            ->name('report.academic.pdf');
+
+        Route::get('/report/{student}/academic/word', [ReportController::class, 'academicWord'])
+            ->name('report.academic.word');
     });
 
 Route::middleware('auth')->group(function () {
