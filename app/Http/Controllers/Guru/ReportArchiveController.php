@@ -7,6 +7,7 @@ use App\Models\ReportArchive;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class ReportArchiveController extends Controller

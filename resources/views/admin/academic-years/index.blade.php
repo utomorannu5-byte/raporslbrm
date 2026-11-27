@@ -5,8 +5,11 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Tahun Ajaran</h4>
+                    <a href="{{ route('admin.academic-years.copy-form') }}" class="btn btn-sm btn-light">
+                        <i class="bi bi-copy"></i> Copy Data
+                    </a>
                 </div>
                 <div class="card-body">
                     @if (session('status'))

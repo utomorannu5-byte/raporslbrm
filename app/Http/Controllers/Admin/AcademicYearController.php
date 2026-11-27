@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAcademicYearRequest;
 use App\Http\Requests\UpdateAcademicYearRequest;
 use App\Models\AcademicYear;
+use App\Services\AcademicYearCopyService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -41,7 +43,8 @@ class AcademicYearController extends Controller
             ]);
         });
 
-        return redirect()
+                    IlluminateSupportFacadesog::info("copy success", ["result" => $result]);
+            return redirect()
             ->route('admin.academic-years.index')
             ->with('status', 'Tahun ajaran berhasil diset aktivkan.');
     }
@@ -83,7 +86,8 @@ class AcademicYearController extends Controller
                 ->update(['is_active' => false]);
         }
 
-        return redirect()
+                    IlluminateSupportFacadesog::info("copy success", ["result" => $result]);
+            return redirect()
             ->route('admin.academic-years.index')
             ->with('status', 'Tahun ajaran berhasil diperbarui.');
     }
@@ -101,8 +105,47 @@ class AcademicYearController extends Controller
             $academicYear->update(['is_active' => true]);
         });
 
-        return redirect()
+                    IlluminateSupportFacadesog::info("copy success", ["result" => $result]);
+            return redirect()
             ->route('admin.academic-years.index')
             ->with('status', 'Tahun ajaran berhasil di-set sebagai aktif.');
+    }
+
+    /**
+     * Show form to copy data from one academic year to another.
+     */
+    public function copyForm(): View
+    {
+        $academicYears = AcademicYear::orderBy('year', 'desc')->orderBy('semester', 'desc')->get();
+
+        return view('admin.academic-years.copy', compact('academicYears'));
+    }
+
+    /**
+     * Copy master data from one academic year to another.
+     */
+    public function copy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'from_year_id' => ['required', 'exists:academic_years,id'],
+            'to_year_id' => ['required', 'exists:academic_years,id', 'different:from_year_id'],
+        ]);
+
+        $from = AcademicYear::findOrFail($validated['from_year_id']);
+        $to = AcademicYear::findOrFail($validated['to_year_id']);
+
+        $service = new AcademicYearCopyService();
+
+        try {
+            $result = $service->copy($from, $to);
+
+            return redirect()
+                ->route('admin.academic-years.index')
+                ->with('status', "Berhasil copy {$result['classes_copied']} kelas, {$result['students_copied']} siswa dari {$from->year} {$from->semester} ke {$to->year} {$to->semester}. Nilai tidak di-copy (kosong).");
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal copy data: ' . $e->getMessage());
+        }
     }
 }

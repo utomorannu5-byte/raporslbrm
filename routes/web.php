@@ -27,7 +27,7 @@ Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/school-profile/edit', [SchoolProfileController::class, 'edit'])
             ->name('school-profile.edit');
@@ -40,6 +40,12 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('academic-years', AcademicYearController::class)
             ->except(['show']);
+
+        Route::get('academic-years/copy', [AcademicYearController::class, 'copyForm'])
+            ->name('academic-years.copy-form');
+
+        Route::post('academic-years/copy', [AcademicYearController::class, 'copy'])
+            ->name('academic-years.copy');
 
         Route::post('academic-years/{academic_year}/toggle', [AcademicYearController::class, 'toggle'])
             ->name('academic-years.toggle');
@@ -61,22 +67,13 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('grade-conversions', GradeConversionController::class)
             ->except(['show']);
-
-        Route::get('report-archives', [Admin\ReportArchiveController::class, 'index'])
-            ->name('admin.report-archives.index');
-
-        Route::get('report-archives/download/{id}', [Admin\ReportArchiveController::class, 'download'])
-            ->name('admin.report-archives.download');
-
-        Route::get('report-archives/download-all', [Admin\ReportArchiveController::class, 'downloadAll'])
-            ->name('admin.report-archives.download-all');
     });
 
 Route::middleware(['auth', 'role:guru'])
     ->prefix('guru')
     ->name('guru.')
     ->group(function () {
-        Route::get('/dashboard', GuruDashboardController::class)->name('dashboard');
+        Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/input-nilai', [InputNilaiController::class, 'index'])
             ->name('input-nilai.index');
@@ -106,10 +103,10 @@ Route::middleware(['auth', 'role:guru'])
             ->name('report.competency.word');
 
         Route::get('/report-archives', [Guru\ReportArchiveController::class, 'index'])
-            ->name('guru.report-archives.index');
+            ->name('report-archives.index');
 
         Route::get('/report-archives/download/{id}', [Guru\ReportArchiveController::class, 'download'])
-            ->name('guru.report-archives.download');
+            ->name('report-archives.download');
     });
 
 Route::middleware('auth')->group(function () {

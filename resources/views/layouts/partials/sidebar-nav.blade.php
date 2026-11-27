@@ -39,7 +39,7 @@
                     'items' => [
                         ['label' => 'Input Nilai', 'icon' => 'pencil', 'route' => 'guru.input-nilai.index'],
                         ['label' => 'Cetak Rapor', 'icon' => 'printer', 'route' => 'guru.input-nilai.index'],
-                        ['label' => 'Arsip Rapor', 'icon' => 'folder', 'route' => 'guru.input-nilai.index'],
+                        ['label' => 'Arsip Rapor', 'icon' => 'folder', 'route' => 'guru.report-archives.index'],
                     ],
                 ],
             ]

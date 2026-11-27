@@ -345,3 +345,72 @@ Menu guru sub-section "Operasional" sekarang aktif dengan route sebenarnya (buka
 - Jika ingin mengarahkan ke halaman Cetak/Arsip yang spesifik, pengembang bisa mengganti `route' => 'guru.input-nilai.index'` dengan route spesifik tersebut pada file sidebar tersebut.
 - Semua 108 test masih lulus tanpa kerusakan.
 
+
+---
+
+## 📅 Tanggal: 27 November 2026
+
+---
+
+## ✅ TAHAP 5A: Dashboard Statistik Admin & Guru (SELESAI)
+
+### Yang dibuat/diubah:
+- `app/Http/Controllers/Admin/DashboardController.php` — `index()` menghitung total siswa, guru, kelas, mapel, dan statistik kelengkapan per kelas (sudah/belum submit, progress %).
+- `app/Http/Controllers/Guru/DashboardController.php` — `index()` menampilkan statistik hanya untuk kelas yang diampu guru (total siswa, sudah submit, belum submit, progress per kelas + total).
+- `routes/web.php` — route `admin.dashboard` & `guru.dashboard` diubah dari invokable ke explicit `[Controller::class, 'index']`.
+- `resources/views/admin/dashboard.blade.php` — menggunakan `<x-app-layout>`, 4 kartu statistik + tabel status kelengkapan per kelas dengan progress bar Bootstrap & badge status.
+- `resources/views/guru/dashboard.blade.php` — menggunakan `<x-app-layout>`, 3 kartu statistik + progress bar per kelas & total keseluruhan; menampilkan placeholder jika guru belum ditugaskan wali kelas.
+
+### Route:
+- `GET /admin/dashboard` → `Admin\DashboardController@index` (name: `admin.dashboard`)
+- `GET /guru/dashboard` → `Guru\DashboardController@index` (name: `guru.dashboard`)
+
+### Test:
+- `AdminDashboardTest` (verify: admin 200, guru 403, data statistik muncul)
+- `GuruDashboardTest` (verify: guru 200, data hanya kelas yang diampu, guru tanpa kelas → placeholder, admin 403)
+- Semua 108 test existing tetap lulus.
+
+### Verifikasi:
+- `php artisan test` → **108 passed (271 assertions)**
+- `storage/logs/laravel.log` → bersih
+- Dashboard Admin: 4 kartu + tabel progress per kelas (badge Lengkap/Proses/Belum Mulai)
+- Dashboard Guru: 3 kartu + progress bar per kelas + total keseluruhan
+
+
+---
+
+## 📅 Tanggal: 27 November 2026 (siang)
+
+---
+
+## ✅ TAHAP 5B: Fitur Copy Data Tahun Ajaran (SELESAI)
+
+### Yang dibuat/diubah:
+- `app/Services/AcademicYearCopyService.php` — baru. Method `copy($from, $to)` duplikasi kelas, siswa, pivot mapel & indikator dalam DB transaction; NISN baru digenerate unik; nilai (academic_grades, competency_grades, student_attitudes) **TIDAK di-copy**.
+- `app/Http/Controllers/Admin/AcademicYearController.php` — tambah `copyForm()` & `copy(Request $request)`, validasi `different:from_year_id`, flash message sukses/error.
+- `routes/web.php` — route `admin.academic-years.copy-form` (GET), `admin.academic-years.copy` (POST) di dalam grup admin.
+- `resources/views/admin/academic-years/copy.blade.php` — baru. Form pilih tahun asal & tujuan, alert warning, konfirmasi JS.
+- `resources/views/admin/academic-years/index.blade.php` — tambah tombol **Copy Data** di header.
+- `tests/Feature/Admin/AcademicYearCopyTest.php` — 6 test: akses form, copy sukses (kelas/siswa/pivot ter-copy, nilai kosong), gagal jika tahun sama, gagal jika tujuan sudah punya kelas, rollback saat error.
+
+### Route baru:
+```
+GET  /admin/academic-years/copy  → admin.academic-years.copy-form
+POST /admin/academic-years/copy  → admin.academic-years.copy
+```
+
+### Test:
+```
+Tests: 114 passed (302 assertions)  ← 108 lama + 6 baru
+Duration: ~63s
+storage/logs/laravel.log → bersih
+```
+
+### Verifikasi manual:
+1. Login admin → menu **Tahun Ajaran** → klik **Copy Data** (tombol baru di header).
+2. Pilih **Dari Tahun Ajaran** (mis. 2025/2026 Ganjil) → **Ke Tahun Ajaran** (mis. 2025/2026 Genap, sudah dibuat & belum punya kelas).
+3. Klik **Copy Data** → konfirmasi → flash message sukses: *"Berhasil copy X kelas, Y siswa..."*.
+3. Cek DB: kelas baru ada di tahun tujuan, siswa baru ada (NISN unik baru), pivot `class_subjects` & `class_indicators` ter-copy, **academic_grades / competency_grades / student_attitudes KOSONG**.
+4. Coba copy ke tahun yang sudah punya kelas → error *"Tahun ajaran tujuan sudah memiliki kelas"*.
+5. Coba copy dari & ke tahun yang sama → validasi error.
+
